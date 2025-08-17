@@ -1,8 +1,37 @@
 
-<<<<<<< HEAD
-A clean, focused implementation of low-light image enhancement using classical computer vision methods optimized for AR/VR applications.
-=======
->>>>>>> 0ea3f5589797276841a2e06c1ce0c594f416ed55
+# 🥇 Real-Time Low-Light Image Enhancement for AR/VR
+
+🎯 **Goal**: Improve clarity and quality of noisy/low-light images and videos from AR/VR headsets in real time, while ensuring energy-efficient deployment on-device.
+
+A complete implementation featuring classical computer vision methods, deep learning models (U-Net & ViT), self-supervised training, and hardware optimization for AR/VR applications.
+
+## 🛠️ What's Built
+
+### 📊 Datasets
+- **Public**: LOL dataset, SID (See-in-the-Dark) dataset support
+- **Custom**: Webcam low-light video capture with synthetic data generation
+- **AR Simulation**: Meta Aria AEA compatible data processing
+
+### 🔧 Methods
+- **Classical Baseline**: Histogram Equalization, CLAHE, Gaussian/Bilateral filters (400+ FPS)
+- **Deep Learning**:
+  - U-Net (fast, effective for enhancement)
+  - Vision Transformer (ViT) variant (benchmarking against U-Net)
+  - Self-supervised training with Noise2Noise
+
+### ⚡ Hardware Efficiency
+- Trained in PyTorch on Apple Silicon (MPS backend)
+- Quantization support (int8/fp16)
+- Export to ONNX + Core ML for iOS/macOS deployment
+
+### 📈 Evaluation
+- **Objective**: PSNR, SSIM, LPIPS metrics
+- **Subjective**: Side-by-side video comparisons
+- **Efficiency**: ms/frame runtime, FPS achieved, memory footprint
+
+### 🎮 Demo / Tools
+- Interactive Streamlit/Gradio dashboard
+- Sliders for "before/after", quality metrics, runtime, and efficiency plots
 
 ## Features
 

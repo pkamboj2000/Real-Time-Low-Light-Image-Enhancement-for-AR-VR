@@ -1,22 +1,18 @@
-#!/usr/bin/env python3
-"""
-Simple U-Net Implementation for Low-Light Enhancement
-Clean, working implementation without complex dependencies
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 class DoubleConv(nn.Module):
-    """Double convolution block"""
-    def __init__(self, in_channels, out_channels):
-        super(DoubleConv, self).__init__()
+    """(convolution => [BN] => ReLU) * 2"""
+    def __init__(self, in_channels, out_channels, mid_channels=None):
+        super().__init__()
+        if not mid_channels:
+            mid_channels = out_channels
         self.double_conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(mid_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
@@ -27,7 +23,7 @@ class DoubleConv(nn.Module):
 class Down(nn.Module):
     """Downscaling with maxpool then double conv"""
     def __init__(self, in_channels, out_channels):
-        super(Down, self).__init__()
+        super().__init__()
         self.maxpool_conv = nn.Sequential(
             nn.MaxPool2d(2),
             DoubleConv(in_channels, out_channels)
@@ -38,37 +34,53 @@ class Down(nn.Module):
 
 class Up(nn.Module):
     """Upscaling then double conv"""
-    def __init__(self, in_channels, out_channels):
-        super(Up, self).__init__()
-        self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
-        self.conv = DoubleConv(in_channels, out_channels)
+    def __init__(self, in_channels, out_channels, bilinear=True):
+        super().__init__()
+        if bilinear:
+            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.conv = DoubleConv(in_channels, out_channels, in_channels // 2)
+        else:
+            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
+            self.conv = DoubleConv(in_channels, out_channels)
 
     def forward(self, x1, x2):
         x1 = self.up(x1)
-        # Handle size mismatch
+        # input is CHW
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
+
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
+                        diffY // 2, diffY - diffY // 2])
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 
-class UNet(nn.Module):
-    """U-Net for image enhancement"""
-    def __init__(self, n_channels=3, n_classes=3):
-        super(UNet, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
+class OutConv(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(OutConv, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
 
-        self.inc = DoubleConv(n_channels, 64)
-        self.down1 = Down(64, 128)
-        self.down2 = Down(128, 256)
-        self.down3 = Down(256, 512)
-        self.down4 = Down(512, 1024)
-        self.up1 = Up(1024, 512)
-        self.up2 = Up(512, 256)
-        self.up3 = Up(256, 128)
-        self.up4 = Up(128, 64)
-        self.outc = nn.Conv2d(64, n_classes, kernel_size=1)
+    def forward(self, x):
+        return self.conv(x)
+
+class CompactUNet(nn.Module):
+    """Compact U-Net for real-time enhancement"""
+    def __init__(self, in_channels=3, out_channels=3, features=32, bilinear=False):
+        super(CompactUNet, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.bilinear = bilinear
+
+        self.inc = DoubleConv(in_channels, features)
+        self.down1 = Down(features, features * 2)
+        self.down2 = Down(features * 2, features * 4)
+        self.down3 = Down(features * 4, features * 8)
+        factor = 2 if bilinear else 1
+        self.down4 = Down(features * 8, features * 16 // factor)
+        self.up1 = Up(features * 16, features * 8 // factor, bilinear)
+        self.up2 = Up(features * 8, features * 4 // factor, bilinear)
+        self.up3 = Up(features * 4, features * 2 // factor, bilinear)
+        self.up4 = Up(features * 2, features, bilinear)
+        self.outc = OutConv(features, out_channels)
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -83,22 +95,6 @@ class UNet(nn.Module):
         logits = self.outc(x)
         return torch.sigmoid(logits)
 
-def create_unet(device='cpu'):
-    """Create and return U-Net model"""
-    model = UNet(n_channels=3, n_classes=3)
-    model = model.to(device)
-    return model
-
-if __name__ == "__main__":
-    # Test the model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
-    print(f"Using device: {device}")
-    
-    model = create_unet(device)
-    test_input = torch.randn(1, 3, 256, 256).to(device)
-    
-    with torch.no_grad():
-        output = model(test_input)
-        print(f"Input shape: {test_input.shape}")
-        print(f"Output shape: {output.shape}")
-        print("U-Net model created successfully!")
+def create_unet(in_channels=3, out_channels=3, features=32):
+    """Create U-Net model"""
+    return CompactUNet(in_channels, out_channels, features)
