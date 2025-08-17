@@ -1,6 +1,8 @@
-# Real-Time Low-Light Image Enhancement for AR/VR
 
+<<<<<<< HEAD
 A clean, focused implementation of low-light image enhancement using classical computer vision methods optimized for AR/VR applications.
+=======
+>>>>>>> 0ea3f5589797276841a2e06c1ce0c594f416ed55
 
 ## Features
 
