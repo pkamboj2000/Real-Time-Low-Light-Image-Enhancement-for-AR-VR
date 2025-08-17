@@ -1,0 +1,77 @@
+# Vision Transformer Training Configuration
+
+# Model settings
+model:
+  type: "vit"
+  variant: "standard"
+  img_size: 224
+  patch_size: 16
+  in_channels: 3
+  out_channels: 3
+  embed_dim: 768
+  n_layers: 12
+  n_heads: 12
+  mlp_ratio: 4.0
+  dropout: 0.1
+
+# Training settings
+training:
+  batch_size: 8  # Smaller batch size for ViT
+  num_epochs: 150
+  learning_rate: 0.0003
+  weight_decay: 0.05
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 10
+
+# Loss function
+loss:
+  type: "combined"
+  l1_weight: 0.7
+  perceptual_weight: 0.2
+  ssim_weight: 0.1
+
+# Data settings
+data:
+  train_low_dir: "data/processed/LOL/train/low"
+  train_normal_dir: "data/processed/LOL/train/high"
+  val_low_dir: "data/processed/LOL/test/low"
+  val_normal_dir: "data/processed/LOL/test/high"
+  image_size: [224, 224]
+  num_workers: 4
+  augmentation: true
+  paired: true
+
+# Hardware settings
+hardware:
+  device: "auto"  # auto, cpu, cuda, mps
+  mixed_precision: true
+  compile_model: false
+
+# Checkpointing
+checkpoint:
+  save_dir: "models/checkpoints"
+  save_every: 15
+  keep_last: 5
+  monitor_metric: "val_psnr"
+  mode: "max"
+
+# Logging
+logging:
+  use_wandb: false
+  project_name: "low-light-enhancement-vit"
+  log_every: 100
+  log_images: true
+  num_log_images: 4
+
+# Evaluation
+evaluation:
+  metrics: ["psnr", "ssim", "lpips"]
+  save_examples: true
+  num_examples: 10
+
+# Early stopping
+early_stopping:
+  patience: 20
+  min_delta: 0.001
+  restore_best_weights: true
