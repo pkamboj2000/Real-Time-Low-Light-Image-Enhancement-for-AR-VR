@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Classical Computer Vision Baselines
-Foundation methods for low-light enhancement
+Classical Computer Vision Baselines for Low-Light Enhancement
+Foundation methods for improving image quality in low-light conditions
 """
 
 import cv2
@@ -132,32 +132,36 @@ class ClassicalBaselines:
         
         return results
     
-    def save_comparison(self, original, results):
-        """Save comparison of all methods."""
+    def save_comparison(self, original_image, results, save_file=True):
+        """Save comparison visualization"""
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-        axes = axes.flatten()
         
         # Original image
-        axes[0].imshow(cv2.cvtColor(original, cv2.COLOR_BGR2RGB))
-        axes[0].set_title('Original')
-        axes[0].axis('off')
+        axes[0, 0].imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
+        axes[0, 0].set_title('Original')
+        axes[0, 0].axis('off')
         
         # Enhanced images
-        for i, (method, result) in enumerate(results.items(), 1):
-            if i < len(axes):
-                axes[i].imshow(cv2.cvtColor(result['image'], cv2.COLOR_BGR2RGB))
-                axes[i].set_title(f'{method.title()}\n{result["time_ms"]:.2f}ms')
-                axes[i].axis('off')
-        
-        # Hide unused subplot
-        if len(results) + 1 < len(axes):
-            axes[-1].axis('off')
+        titles = ['CLAHE', 'Bilateral Filter', 'Gaussian Filter', 'Histogram Eq.', 'Combined']
+        for i, (method, enhanced) in enumerate(results.items()):
+            row = i // 3
+            col = (i + 1) % 3
+            if col == 0 and row == 1:
+                col = 0
+            elif col == 1 and row == 1:
+                col = 1
+            elif col == 2 and row == 1:
+                col = 2
+            
+            if row < 2 and col < 3:
+                axes[row, col].imshow(cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB))
+                axes[row, col].set_title(titles[i])
+                axes[row, col].axis('off')
         
         plt.tight_layout()
-        plt.savefig('classical_comparison.png', dpi=300, bbox_inches='tight')
-        plt.show()
-        
-        print("Comparison saved as 'classical_comparison.png'")
+        if save_file:
+            plt.savefig('classical_comparison.png', dpi=300, bbox_inches='tight')
+        plt.close()
     
     def calculate_metrics(self, original, enhanced):
         """Calculate quality metrics."""
@@ -236,7 +240,7 @@ def main():
     print("Classical Low-Light Enhancement Demo")
     print("=" * 40)
     
-    # Initialize classical methods
+    # Initialize classical methods processor
     classical = ClassicalBaselines()
     
     # Load or create test images
@@ -245,10 +249,10 @@ def main():
     for i, image in enumerate(test_images):
         print(f"\nProcessing image {i+1}...")
         
-        # Benchmark all methods
+        # Run benchmark across all methods
         results = classical.benchmark_methods(image, save_results=True)
         
-        # Calculate metrics for the combined method
+        # Calculate quality metrics for the combined method (best overall performance)
         combined_result = results['combined']['image']
         metrics = classical.calculate_metrics(image, combined_result)
         

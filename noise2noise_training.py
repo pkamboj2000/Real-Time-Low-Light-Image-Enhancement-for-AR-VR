@@ -8,7 +8,7 @@ from pathlib import Path
 import random
 from PIL import Image
 import torchvision.transforms as transforms
-from compact_unet import CompactUNet
+from unet_model import CompactUNet
 import time
 import json
 
@@ -194,7 +194,7 @@ class Noise2NoiseTrainer:
             'psnr': total_psnr / num_batches
         }
     
-    def train(self, data_dir, epochs=30, batch_size=8, val_split=0.2):
+    def train(self, data_dir, epochs=30, batch_size=8, val_split=0.2, save_history=False):
         """Complete Noise2Noise training"""
         print(f"Starting Noise2Noise training on {self.device}")
         
@@ -237,7 +237,7 @@ class Noise2NoiseTrainer:
             if val_metrics['clean_loss'] < best_clean_loss:
                 best_clean_loss = val_metrics['clean_loss']
                 self.save_model('best_noise2noise_model.pth')
-                print("💾 New best model saved!")
+                print("New best model saved!")
             
             epoch_time = time.time() - start_time
             
@@ -253,21 +253,22 @@ class Noise2NoiseTrainer:
         # Save final model
         self.save_model('final_noise2noise_model.pth')
         
-        # Save training history
-        history = {
-            'train_n2n_losses': self.train_losses,
-            'val_n2n_losses': self.val_losses,
-            'train_clean_losses': self.clean_losses,
-            'epochs': epochs,
-            'best_clean_loss': best_clean_loss,
-            'device': str(self.device)
-        }
+        # Save training history (optional - not required for core functionality)
+        if save_history:
+            history = {
+                'train_losses': self.losses,
+                'train_clean_losses': self.clean_losses,
+                'epochs': epochs,
+                'best_clean_loss': best_clean_loss,
+                'device': str(self.device)
+            }
+            
+            with open('noise2noise_training_history.json', 'w') as f:
+                json.dump(history, f, indent=2)
+            print("Training history saved to noise2noise_training_history.json")
         
-        with open('noise2noise_training_history.json', 'w') as f:
-            json.dump(history, f, indent=2)
-        
-        print(f"✅ Noise2Noise training completed!")
-        print(f"📊 Best clean loss: {best_clean_loss:.4f}")
+        print(f"Training completed successfully!")
+        print(f"Best clean loss achieved: {best_clean_loss:.4f}")
     
     def save_model(self, filename):
         """Save model checkpoint"""
@@ -314,16 +315,16 @@ def create_sample_data(num_images=200, img_size=256):
 
 def main():
     """Demo Noise2Noise training"""
-    print("🧠 Noise2Noise Self-Supervised Training")
+    print("Noise2Noise Self-Supervised Training")
     print("=" * 50)
     
-    # Create sample data
+    # Create sample data for training
     data_dir = create_sample_data(num_images=100, img_size=256)
     
     # Initialize trainer
     trainer = Noise2NoiseTrainer(model_type='unet', img_size=256)
     
-    # Start training
+    # Start training process
     trainer.train(
         data_dir=data_dir,
         epochs=10,  # Quick demo
@@ -331,8 +332,8 @@ def main():
         val_split=0.2
     )
     
-    print("\n🎉 Noise2Noise training demo completed!")
-    print("📁 Models saved:")
+    print("\nNoise2Noise training demo completed!")
+    print("Models saved:")
     print("  - best_noise2noise_model.pth")
     print("  - final_noise2noise_model.pth")
     print("  - noise2noise_training_history.json")

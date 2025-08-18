@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AR/VR Low-Light Enhancement Demo
-Streamlit interface for real-time enhancement
+Interactive Streamlit interface for real-time enhancement testing
 """
 
 import streamlit as st
@@ -17,10 +17,10 @@ from classical_methods import ClassicalBaselines
 from unet_model import CompactUNet
 from vit_model import EnhancementViT
 
-# Page config
+# Page configuration
 st.set_page_config(
     page_title="AR/VR Low-Light Enhancement",
-    page_icon="⚙️",
+    page_icon="⚙",
     layout="wide"
 )
 

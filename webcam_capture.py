@@ -198,7 +198,7 @@ class WebcamDataCapture:
 
 def main():
     """Interactive webcam capture session"""
-    print("🎥 Webcam Data Capture for AR/VR Low-Light Enhancement")
+    print("Webcam Data Capture for AR/VR Low-Light Enhancement")
     print("=" * 60)
     
     capture = WebcamDataCapture()
@@ -212,16 +212,16 @@ def main():
     
     time.sleep(3)
     
-    # Start capture session
-    session_data = capture.capture_session(duration_seconds=300, fps=30)  # 5 minutes
+    # Start capture session (5 minutes)
+    session_data = capture.capture_session(duration_seconds=300, fps=30)
     
     if session_data and session_data["total_frames"] > 0:
         print("\nCreating comparison video...")
         capture.create_video_from_session(session_data["session_id"])
         
-        print(f"\n✅ Capture complete!")
-        print(f"📁 Data saved in: {capture.output_dir}")
-        print(f"📊 Total frame pairs: {session_data['total_frames']}")
+        print(f"\nCapture complete!")
+        print(f"Data saved in: {capture.output_dir}")
+        print(f"Total frame pairs: {session_data['total_frames']}")
 
 if __name__ == "__main__":
     main()
