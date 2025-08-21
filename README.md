@@ -1,62 +1,61 @@
-
 # Real-Time Low-Light Image Enhancement for AR/VR
 
-**Goal**: Improve clarity and quality of noisy/low-light images and videos from AR/VR headsets in real time, while ensuring energy-efficient deployment on-device.
+Goal: This project aims to improve the clarity and quality of noisy or low-light images and videos from AR/VR headsets in real time, while keeping the solution energy efficient for on-device use.
 
-A complete implementation featuring classical computer vision methods, deep learning models (U-Net & ViT), self-supervised training, and hardware optimization for AR/VR applications.
+The repository includes classical computer vision methods, deep learning models (U-Net and ViT), self-supervised training, and hardware optimization for AR/VR applications.
 
-## What's Built
+## Overview
 
-### Datasets
-- **Public**: LOL dataset, SID (See-in-the-Dark) dataset support
-- **Custom**: Webcam low-light video capture with synthetic data generation
-- **AR Simulation**: Meta Aria AEA compatible data processing
+Datasets:
 
-### Methods
-- **Classical Baseline**: Histogram Equalization, CLAHE, Gaussian/Bilateral filters (400+ FPS)
-- **Deep Learning**:
-  - U-Net (fast, effective for enhancement)
-  - Vision Transformer (ViT) variant (benchmarking against U-Net)
-  - Self-supervised training with Noise2Noise
+Methods:
+   - U-Net (fast, effective for enhancement)
+   - Vision Transformer (ViT) variant (for benchmarking)
+   - Self-supervised training with Noise2Noise
 
-### Hardware Efficiency
-- Trained in PyTorch on Apple Silicon (MPS backend)
-- Quantization support (int8/fp16)
-- Export to ONNX + Core ML for iOS/macOS deployment
+Hardware Efficiency:
 
-### Evaluation
-- **Objective**: PSNR, SSIM, LPIPS metrics
-- **Subjective**: Side-by-side video comparisons
-- **Efficiency**: ms/frame runtime, FPS achieved, memory footprint
+Evaluation:
 
-### Demo / Tools
-- Interactive Streamlit/Gradio dashboard
-- Sliders for "before/after", quality metrics, runtime, and efficiency plots
+Demo / Tools:
 
-## Features
+Datasets:
 
-- **Classical Methods**: CLAHE, Bilateral filtering, Histogram equalization, Gaussian enhancement
-- **Real-Time Performance**: 400+ FPS capability for AR/VR applications
-- **Comprehensive Evaluation**: PSNR, SSIM metrics with performance benchmarking
-- **Interactive Demo**: Streamlit-based interface for real-time testing
+Methods:
+   - U-Net (fast, effective for enhancement)
+   - Vision Transformer (ViT) variant (for benchmarking)
+   - Self-supervised training with Noise2Noise
+
+Hardware Efficiency:
+
+Evaluation:
+
+Demo / Tools:
+
+
+
+- Comprehensive evaluation: PSNR, SSIM metrics with performance benchmarking
+- Comprehensive evaluation: PSNR, SSIM metrics with performance benchmarking
+- Interactive demo: Streamlit-based interface for real-time testing
+
 
 ## Quick Start
 
-1. **Install Dependencies**:
+1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Run Classical Methods Evaluation**:
-   ```bash
-   python classical_methods.py
-   ```
-
-3. **Interactive Demo**:
-   ```bash
-   streamlit run demo.py
-   ```
-
+2. Train models (Apple Silicon GPU/MPS recommended):
+   - All training scripts will use Apple Silicon GPU (MPS) if available, otherwise CPU.
+   - To train U-Net (LOL dataset example):
+     ```bash
+     # Edit dataset_loaders.py to set your LOL dataset path
+     python unet_model.py  # (add training entry point if not present)
+     ```
+   - To train ViT (SID dataset example):
+     ```bash
+     # Edit dataset_loaders.py to set your SID dataset path
 ## Project Structure
 
 ```
@@ -80,18 +79,10 @@ A complete implementation featuring classical computer vision methods, deep lear
 | Bilateral | 11.4 | 0.339 | 414 | Yes |
 | Histogram EQ | 11.5 | 0.226 | 4211 | Yes |
 | Gaussian | 10.5 | 0.737 | 674 | Yes |
+- Python 3.8+
+- OpenCV, NumPy, scikit-image
+- Optional: CUDA/MPS for future deep learning extensions
 
-## Hardware Requirements
-
-- **Python 3.8+**
-- **OpenCV, NumPy, scikit-image**
-- **Optional**: CUDA/MPS for future deep learning extensions
-
-## What This Demonstrates
-
-This project provides a **clean, working baseline** for low-light image enhancement that:
-- Actually runs without complex dependencies
-- Achieves real-time performance (30+ FPS)
 - Provides measurable quality improvements
 - Includes visual comparison tools
 - Ready for AR/VR integration
